@@ -4,8 +4,8 @@ import TransactionForm from './components/transactionForm';
 import { getAuth, signOut } from 'firebase/auth';
 import './App.css'
 
-const Home = () => {
-  const [userId] = useState("demo-user-id");
+const Home = ({ user }) => {
+  const [userId] = useState(user?.uid || "demo-user-id");
   const [transactionToEdit, setTransactionToEdit] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 

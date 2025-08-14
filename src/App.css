@@ -10,6 +10,16 @@
   background: #222;
   color: white;
   padding: 10px 20px;
+  user-select: none;
+}
+.navbar h1 {
+  cursor: default;
+  outline: none;
+}
+
+.navbar li, .user-icon {
+  cursor: pointer;
+  outline: none;
 }
 
 .navbar ul {
