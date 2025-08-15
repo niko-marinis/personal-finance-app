@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import './App.css';
+import { FaTachometerAlt, FaExchangeAlt, FaWallet, FaUser } from 'react-icons/fa';
 
 const Home = ({ user }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -23,20 +24,21 @@ const Home = ({ user }) => {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <h1>Personal Finance Tracker</h1>
           <ul className="nav-tabs">
-            <li>Dashboard</li>
-            <li>Transactions</li>
-            <li>Budgets</li>
+            <li><FaTachometerAlt /> Dashboard</li>
+            <li><FaExchangeAlt /> Transactions</li>
+            <li><FaWallet /> Budgets</li>
           </ul>
         </div>
         
         <div className="user-menu">
-          <div 
-            className="user-icon" 
+        <div 
+           className="user-icon" 
             onClick={() => setShowDropdown(!showDropdown)}
             title="User Menu"
-          >
-            👤
-          </div>
+        >
+        <FaUser size={20} />
+        </div>
+
           {showDropdown && (
             <div className="dropdown-menu">
               <div className="dropdown-item" onClick={handleLogout}>Logout</div>

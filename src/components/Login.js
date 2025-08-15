@@ -13,7 +13,7 @@ const Login = () => {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/'); // Navigate to home after successful login
+      navigate('/');
     } catch (error) {
       alert(error.message);
     }
@@ -22,7 +22,7 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     try {
       await signInWithGoogle();
-      navigate('/'); // Navigate to home after successful login
+      navigate('/');
     } catch (error) {
       alert(error.message);
     }
