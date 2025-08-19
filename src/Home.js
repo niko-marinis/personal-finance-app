@@ -17,6 +17,8 @@ const Home = ({ user }) => {
       });
   };
 
+  const username = user?.email?.split('@')[0];
+
   return (
     <div className="dashboard-container">
       {/* Navbar */}
@@ -37,6 +39,11 @@ const Home = ({ user }) => {
             title="User Menu"
         >
         <FaUser size={20} />
+          {username && (
+            <span style={{ marginLeft: '8px', fontWeight: 'bold' }}>
+                {username}
+            </span>
+          )}
         </div>
 
           {showDropdown && (
