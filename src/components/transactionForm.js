@@ -1,31 +1,80 @@
 import React, { useState } from 'react';
-import { addTransaction, editTransaction } from '../services/transactionService';
+import { addTransaction } from '../services/transactionService';
 
-const TransactionForm = ({ userId, existingTransaction, onSave }) => {
-  const [amount, setAmount] = useState(existingTransaction?.amount || '');
-  const [description, setDescription] = useState(existingTransaction?.description || '');
-  const [categoryId, setCategoryId] = useState(existingTransaction?.category_id || '');
+const TransactionForm = ({ userId, onTransactionAdded }) => {
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('expense');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = { amount, description, category_id: categoryId };
-
-    if (existingTransaction) {
-      await editTransaction(existingTransaction.id, data);
-    } else {
-      await addTransaction(userId, amount, categoryId, description);
+    if (!amount || !description) return;
+    
+    setIsLoading(true);
+    try {
+      await addTransaction(userId, amount, category, description);
+      setAmount('');
+      setDescription('');
+      setCategory('expense');
+      if (onTransactionAdded) onTransactionAdded();
+    } catch (error) {
+      alert("Error adding transaction: " + error.message);
+    } finally {
+      setIsLoading(false);
     }
-
-    onSave(); // callback to refresh list or close form
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount" />
-      <input value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" />
-      <input value={categoryId} onChange={e => setCategoryId(e.target.value)} placeholder="Category ID" />
-      <button type="submit">{existingTransaction ? 'Update' : 'Add'} Transaction</button>
-    </form>
+    <div className="transaction-form-container">
+      <h3>Add New Transaction</h3>
+      <form onSubmit={handleSubmit} className="transaction-form">
+        <div className="form-group">
+          <label>Type</label>
+          <select 
+            value={category} 
+            onChange={(e) => setCategory(e.target.value)}
+            className="form-select"
+          >
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label>Amount ($)</label>
+          <input
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="form-input"
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Description</label>
+          <input
+            type="text"
+            placeholder="What was this for?"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="form-input"
+            required
+          />
+        </div>
+        
+        <button 
+          type="submit" 
+          className="submit-btn"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Adding...' : 'Add Transaction'}
+        </button>
+      </form>
+    </div>
   );
 };
 
