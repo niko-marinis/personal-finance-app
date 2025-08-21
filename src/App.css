@@ -417,3 +417,40 @@ html, body {
 .date-filter .filter-btn:hover {
   background-color: #5a6268;
 }
+
+/* Add these styles to your existing App.css */
+
+.transaction-item.income .transaction-amount {
+  color: #2ecc71 !important; /* Green for income */
+}
+
+.transaction-item.expense .transaction-amount {
+  color: #e74c3c !important; /* Red for expense */
+}
+
+/* Ensure the colors are applied properly */
+.transaction-amount.income {
+  color: #2ecc71;
+}
+
+.transaction-amount.expense {
+  color: #e74c3c;
+}
+
+/* Update the existing transaction item styles if needed */
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease;
+}
+
+.transaction-item:hover {
+  background-color: #f9f9f9;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}

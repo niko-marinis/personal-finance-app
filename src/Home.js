@@ -11,125 +11,125 @@ const Home = ({ user }) => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('expense');
+  const [type, setType] = useState('expense');
   const [isLoading, setIsLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState('daily');
-  
+  const [selectedCategory, setSelectedCategory] = useState('');
+
   // Set default dates based on active filter
   const today = new Date();
   const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const [startDate, setStartDate] = useState(todayFormatted);
 
-const tomorrow = new Date();
-tomorrow.setDate(today.getDate() + 1);
-const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-const [endDate, setEndDate] = useState(tomorrowFormatted);
-
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+  const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+  const [endDate, setEndDate] = useState(tomorrowFormatted);
 
   // Set date range based on filter type
   const setDateRange = (filterType) => {
-  const today = new Date();
+    const today = new Date();
 
-  switch (filterType) {
-    case 'daily': {
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
+    switch (filterType) {
+      case 'daily': {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
 
-      const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+        const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
 
-      setStartDate(todayFormatted);
-      setEndDate(tomorrowFormatted);
-      break;
+        setStartDate(todayFormatted);
+        setEndDate(tomorrowFormatted);
+        break;
+      }
+
+      case 'weekly': {
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+        const startFormatted = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth() + 1).padStart(2, '0')}-${String(startOfWeek.getDate()).padStart(2, '0')}`;
+        const endFormatted = `${endOfWeek.getFullYear()}-${String(endOfWeek.getMonth() + 1).padStart(2, '0')}-${String(endOfWeek.getDate()).padStart(2, '0')}`;
+
+        setStartDate(startFormatted);
+        setEndDate(endFormatted);
+        break;
+      }
+
+      case 'monthly': {
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+        const startFormatted = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-${String(startOfMonth.getDate()).padStart(2, '0')}`;
+        const endFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
+
+        setStartDate(startFormatted);
+        setEndDate(endFormatted);
+        break;
+      }
+
+      case 'yearly': {
+        const startOfYear = new Date(today.getFullYear(), 0, 1);
+        const endOfYear = new Date(today.getFullYear() + 1, 0, 1);
+
+        const startFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
+        const endFormatted = `${endOfYear.getFullYear()}-${String(endOfYear.getMonth() + 1).padStart(2, '0')}-${String(endOfYear.getDate()).padStart(2, '0')}`;
+
+        setStartDate(startFormatted);
+        setEndDate(endFormatted);
+        break;
+      }
+
+      default: {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+
+        const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+        setStartDate(todayFormatted);
+        setEndDate(tomorrowFormatted);
+      }
     }
-
-    case 'weekly': {
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay());
-
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 7);
-
-      const startFormatted = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth() + 1).padStart(2, '0')}-${String(startOfWeek.getDate()).padStart(2, '0')}`;
-      const endFormatted = `${endOfWeek.getFullYear()}-${String(endOfWeek.getMonth() + 1).padStart(2, '0')}-${String(endOfWeek.getDate()).padStart(2, '0')}`;
-
-      setStartDate(startFormatted);
-      setEndDate(endFormatted);
-      break;
-    }
-
-    case 'monthly': {
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-      const startFormatted = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-${String(startOfMonth.getDate()).padStart(2, '0')}`;
-      const endFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
-
-      setStartDate(startFormatted);
-      setEndDate(endFormatted);
-      break;
-    }
-
-    case 'yearly': {
-      const startOfYear = new Date(today.getFullYear(), 0, 1);
-      const endOfYear = new Date(today.getFullYear() + 1, 0, 1);
-
-      const startFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
-      const endFormatted = `${endOfYear.getFullYear()}-${String(endOfYear.getMonth() + 1).padStart(2, '0')}-${String(endOfYear.getDate()).padStart(2, '0')}`;
-
-      setStartDate(startFormatted);
-      setEndDate(endFormatted);
-      break;
-    }
-
-    default: {
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
-
-      const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-
-      setStartDate(todayFormatted);
-      setEndDate(tomorrowFormatted);
-    }
-  }
-};
-
+  };
 
   // Apply filter when activeFilter changes
   useEffect(() => {
     setDateRange(activeFilter);
-  }, [activeFilter]);
+  }, [activeFilter, selectedCategory]);
 
   // Filter transactions based on date range - using useCallback to memoize
-const filterTransactionsByDate = useCallback((txns, start, end) => {
-  if (!start && !end) {
-    setFilteredTransactions(txns);
-    return;
-  }
+  const filterTransactionsByDate = useCallback((txns, start, end) => {
+    if (!start && !end) {
+      setFilteredTransactions(txns);
+      return;
+    }
 
-  const startDateObj = start ? new Date(start) : null;
-  const endDateObj = end ? new Date(end) : null;
+    const startDateObj = start ? new Date(start) : null;
+    const endDateObj = end ? new Date(end) : null;
 
-  if (startDateObj) startDateObj.setHours(0, 0, 0, 0);
-  if (endDateObj) endDateObj.setHours(23, 59, 59, 999);
+    if (startDateObj) startDateObj.setHours(0, 0, 0, 0);
+    if (endDateObj) endDateObj.setHours(23, 59, 59, 999);
 
-  const filtered = txns.filter(tx => {
-    const rawDate = tx.transaction_date;
-    const txDate = rawDate instanceof Date
-      ? rawDate
-      : rawDate?.toDate?.() ?? null;
+    const filtered = txns.filter(tx => {
+      const rawDate = tx.transaction_date;
+      const txDate = rawDate instanceof Date
+        ? rawDate
+        : rawDate?.toDate?.() ?? null;
 
-    if (!txDate) return false;
+      if (!txDate) return false;
 
-    return (!startDateObj || txDate >= startDateObj) &&
-           (!endDateObj || txDate <= endDateObj);
-  });
+      return (!startDateObj || txDate >= startDateObj) &&
+             (!endDateObj || txDate <= endDateObj);
+    });
 
-  console.log("Filtered transactions:", filtered.length, "of", txns.length);
-  setFilteredTransactions(filtered);
-}, []);
+    console.log("Filtered transactions:", filtered.length, "of", txns.length);
+    setFilteredTransactions(filtered);
+  }, []);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -152,6 +152,7 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
           return { 
             id: doc.id, 
             amount: docData.amount,
+            type_id: docData.type_id,
             category_id: docData.category_id,
             description: docData.description,
             transaction_date: docData.transaction_date?.toDate?.() || new Date(),
@@ -169,12 +170,12 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
     );
 
     return () => unsubscribe();
-  }, [user, filterTransactionsByDate, startDate, endDate]);
+  }, [user, filterTransactionsByDate, startDate, endDate, selectedCategory]);
 
   // Update filtered transactions when dates change
   useEffect(() => {
-    filterTransactionsByDate(transactions, startDate, endDate);
-  }, [transactions, startDate, endDate, filterTransactionsByDate]);
+    filterTransactionsByDate(transactions, startDate, endDate, selectedCategory);
+  }, [transactions, startDate, endDate, filterTransactionsByDate, selectedCategory]);
 
   const handleLogout = () => {
     const auth = getAuth();
@@ -193,11 +194,12 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
     
     setIsLoading(true);
     try {
-      console.log("Adding transaction:", { amount, category, description });
-      await addTransaction(user.uid, amount, category, description);
+      console.log("Adding transaction:", { amount, type, category, description });
+      await addTransaction(user.uid, amount, type, category, description);
       setAmount('');
+      setCategory('');
       setDescription('');
-      setCategory('expense');
+      setType('expense');
       alert('Transaction added successfully!');
     } catch (error) {
       console.error("Error adding transaction:", error);
@@ -222,17 +224,18 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
   const clearFilters = () => {
     setActiveFilter('daily');
     setDateRange('daily');
+    setSelectedCategory('');
   };
 
   const username = user?.email?.split('@')[0];
 
   // Calculate totals for the stats cards based on filtered transactions
   const totalIncome = filteredTransactions
-    .filter(tx => tx.category_id === 'income')
+    .filter(tx => tx.type_id === 'income')
     .reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
   
   const totalExpenses = filteredTransactions
-    .filter(tx => tx.category_id === 'expense')
+    .filter(tx => tx.type_id === 'expense')
     .reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
   
   const remainingBudget = totalIncome - totalExpenses;
@@ -272,6 +275,7 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
         </div>
       </nav>
 
+      {/* Stat Cards Section */}
       <div className="stats-container">
         <div className="stat-card">
           <h3>Total Income</h3>
@@ -295,8 +299,8 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
             <div className="form-group">
               <label>Type</label>
               <select 
-                value={category} 
-                onChange={(e) => setCategory(e.target.value)}
+                value={type} 
+                onChange={(e) => setType(e.target.value)}
                 className="form-select"
               >
                 <option value="income">Income</option>
@@ -304,6 +308,35 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
               </select>
             </div>
             
+            {type === 'expense' && (
+              <div className="form-group">
+                <label>Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="form-select"
+                  required={type === 'expense'}
+                >
+                  <option value="">Select a category</option>
+                  <option value="Auto & Transport">Auto & Transport</option>
+                  <option value="Bills">Bills</option>
+                  <option value="Business">Business</option>
+                  <option value="Donations">Donations</option>
+                  <option value="Eating Out">Eating Out</option>
+                  <option value="Education">Education</option>
+                  <option value="Entertainment & Rec">Entertainment & Rec</option>
+                  <option value="Gifts">Gifts</option>
+                  <option value="Groceries">Groceries</option>
+                  <option value="Health">Health</option>
+                  <option value="Home">Home</option>
+                  <option value="Medical">Medical</option>
+                  <option value="Pets">Pets</option>
+                  <option value="Tech">Tech</option>
+                  <option value="Travel">Travel</option>
+                </select>
+              </div>
+            )}
+
             <div className="form-group">
               <label>Amount ($)</label>
               <input
@@ -370,7 +403,7 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
             </button>
           </div>
           
-          {/* Date Filter - Always Visible */}
+          {/* Date Filter */}
           <div className="date-filter">
             <div className="filter-controls">
               <div className="filter-group">
@@ -385,6 +418,7 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
                   className="filter-input"
                 />
               </div>
+
               <div className="filter-group">
                 <label>End Date</label>
                 <input
@@ -397,17 +431,46 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
                   className="filter-input"
                 />
               </div>
+
+              <div className="filter-group">
+                <label>Category</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="filter-input"
+                >
+                  <option value="">All</option>
+                  <option value="Auto & Transport">Auto & Transport</option>
+                  <option value="Bills">Bills</option>
+                  <option value="Business">Business</option>
+                  <option value="Donations">Donations</option>
+                  <option value="Eating Out">Eating Out</option>
+                  <option value="Education">Education</option>
+                  <option value="Entertainment & Rec">Entertainment & Rec</option>
+                  <option value="Gifts">Gifts</option>
+                  <option value="Groceries">Groceries</option>
+                  <option value="Health">Health</option>
+                  <option value="Home">Home</option>
+                  <option value="Medical">Medical</option>
+                  <option value="Pets">Pets</option>
+                  <option value="Tech">Tech</option>
+                  <option value="Travel">Travel</option>
+                </select>
+              </div>
+
               <button 
                 className="clear-filter-btn"
                 onClick={clearFilters}
               >
-                Reset to Today
+                Reset Filters
               </button>
             </div>
-            {(startDate || endDate) && (
+
+            {(startDate || endDate || selectedCategory) && (
               <p className="filter-info">
                 Showing {filteredTransactions.length} transactions
                 {activeFilter !== 'custom' && ` (${activeFilter})`}
+                {selectedCategory && ` in category: ${selectedCategory}`}
               </p>
             )}
           </div>
@@ -417,15 +480,15 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
           ) : (
             <div className="transactions">
               {filteredTransactions.map(tx => (
-                <div key={tx.id} className={`transaction-item ${tx.category_id}`}>
+                <div key={tx.id} className={`transaction-item ${tx.type_id}`}>
                   <div className="transaction-info">
                     <div className="transaction-desc">{tx.description}</div>
                     <div className="transaction-date">
                       {tx.transaction_date?.toLocaleDateString()}
                     </div>
                   </div>
-                  <div className="transaction-amount">
-                    {tx.category_id === 'income' ? '+' : '-'}${parseFloat(tx.amount || 0).toFixed(2)}
+                  <div className={`transaction-amount ${tx.type_id}`}>
+                    {tx.type_id === 'income' ? '+' : '-'}${parseFloat(tx.amount || 0).toFixed(2)}
                   </div>
                   <button 
                     className="delete-btn"
