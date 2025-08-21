@@ -20,44 +20,82 @@ const Home = ({ user }) => {
   const today = new Date();
   const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const [startDate, setStartDate] = useState(todayFormatted);
-  const [endDate, setEndDate] = useState(todayFormatted);
 
-  // Format date for display (MM/DD/YYYY format)
-  const formatDisplayDate = (dateString) => {
-    const date = new Date(dateString);
-    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-  };
+const tomorrow = new Date();
+tomorrow.setDate(today.getDate() + 1);
+const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+const [endDate, setEndDate] = useState(tomorrowFormatted);
+
 
   // Set date range based on filter type
   const setDateRange = (filterType) => {
-    const today = new Date();
-    const start = new Date();
-    
-    switch (filterType) {
-      case 'daily':
-        setStartDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
-        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
-        break;
-      case 'weekly':
-        start.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
-        setStartDate(start.toISOString().split('T')[0]);
-        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
-        break;
-      case 'monthly':
-        start.setDate(1); // Start of month
-        setStartDate(start.toISOString().split('T')[0]);
-        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
-        break;
-      case 'yearly':
-        start.setMonth(0, 1); // Start of year (January 1st)
-        setStartDate(start.toISOString().split('T')[0]);
-        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
-        break;
-      default:
-        setStartDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
-        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+  const today = new Date();
+
+  switch (filterType) {
+    case 'daily': {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+      setStartDate(todayFormatted);
+      setEndDate(tomorrowFormatted);
+      break;
     }
-  };
+
+    case 'weekly': {
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+      const startFormatted = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth() + 1).padStart(2, '0')}-${String(startOfWeek.getDate()).padStart(2, '0')}`;
+      const endFormatted = `${endOfWeek.getFullYear()}-${String(endOfWeek.getMonth() + 1).padStart(2, '0')}-${String(endOfWeek.getDate()).padStart(2, '0')}`;
+
+      setStartDate(startFormatted);
+      setEndDate(endFormatted);
+      break;
+    }
+
+    case 'monthly': {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+      const startFormatted = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-${String(startOfMonth.getDate()).padStart(2, '0')}`;
+      const endFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
+
+      setStartDate(startFormatted);
+      setEndDate(endFormatted);
+      break;
+    }
+
+    case 'yearly': {
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      const endOfYear = new Date(today.getFullYear() + 1, 0, 1);
+
+      const startFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
+      const endFormatted = `${endOfYear.getFullYear()}-${String(endOfYear.getMonth() + 1).padStart(2, '0')}-${String(endOfYear.getDate()).padStart(2, '0')}`;
+
+      setStartDate(startFormatted);
+      setEndDate(endFormatted);
+      break;
+    }
+
+    default: {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+      setStartDate(todayFormatted);
+      setEndDate(tomorrowFormatted);
+    }
+  }
+};
+
 
   // Apply filter when activeFilter changes
   useEffect(() => {
@@ -368,9 +406,7 @@ const filterTransactionsByDate = useCallback((txns, start, end) => {
             </div>
             {(startDate || endDate) && (
               <p className="filter-info">
-                Showing {filteredTransactions.length} of {transactions.length} transactions
-                {startDate && ` from ${formatDisplayDate(startDate)}`}
-                {endDate && ` to ${formatDisplayDate(endDate)}`}
+                Showing {filteredTransactions.length} transactions
                 {activeFilter !== 'custom' && ` (${activeFilter})`}
               </p>
             )}
