@@ -18,7 +18,7 @@ const Home = ({ user }) => {
   
   // Set default dates based on active filter
   const today = new Date();
-  const todayFormatted = today.toISOString().split('T')[0];
+  const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const [startDate, setStartDate] = useState(todayFormatted);
   const [endDate, setEndDate] = useState(todayFormatted);
 
@@ -35,27 +35,27 @@ const Home = ({ user }) => {
     
     switch (filterType) {
       case 'daily':
-        setStartDate(today.toISOString().split('T')[0]);
-        setEndDate(today.toISOString().split('T')[0]);
+        setStartDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
         break;
       case 'weekly':
         start.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
         setStartDate(start.toISOString().split('T')[0]);
-        setEndDate(today.toISOString().split('T')[0]);
+        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
         break;
       case 'monthly':
         start.setDate(1); // Start of month
         setStartDate(start.toISOString().split('T')[0]);
-        setEndDate(today.toISOString().split('T')[0]);
+        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
         break;
       case 'yearly':
         start.setMonth(0, 1); // Start of year (January 1st)
         setStartDate(start.toISOString().split('T')[0]);
-        setEndDate(today.toISOString().split('T')[0]);
+        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
         break;
       default:
-        setStartDate(today.toISOString().split('T')[0]);
-        setEndDate(today.toISOString().split('T')[0]);
+        setStartDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+        setEndDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
     }
   };
 
@@ -65,40 +65,33 @@ const Home = ({ user }) => {
   }, [activeFilter]);
 
   // Filter transactions based on date range - using useCallback to memoize
-  const filterTransactionsByDate = useCallback((txns, start, end) => {
-    if (!start && !end) {
-      setFilteredTransactions(txns);
-      return;
-    }
+const filterTransactionsByDate = useCallback((txns, start, end) => {
+  if (!start && !end) {
+    setFilteredTransactions(txns);
+    return;
+  }
 
-    const startDateObj = start ? new Date(start) : null;
-    const endDateObj = end ? new Date(end) : null;
+  const startDateObj = start ? new Date(start) : null;
+  const endDateObj = end ? new Date(end) : null;
 
-    // Set start date to beginning of day and end date to end of day for inclusive filtering
-    if (startDateObj) {
-      startDateObj.setHours(0, 0, 0, 0);
-    }
-    if (endDateObj) {
-      endDateObj.setHours(23, 59, 59, 999);
-    }
+  if (startDateObj) startDateObj.setHours(0, 0, 0, 0);
+  if (endDateObj) endDateObj.setHours(23, 59, 59, 999);
 
-    const filtered = txns.filter(tx => {
-      const txDate = tx.transaction_date;
-      if (!txDate) return false;
+  const filtered = txns.filter(tx => {
+    const rawDate = tx.transaction_date;
+    const txDate = rawDate instanceof Date
+      ? rawDate
+      : rawDate?.toDate?.() ?? null;
 
-      if (startDateObj && endDateObj) {
-        return txDate >= startDateObj && txDate <= endDateObj;
-      } else if (startDateObj) {
-        return txDate >= startDateObj;
-      } else if (endDateObj) {
-        return txDate <= endDateObj;
-      }
-      return true;
-    });
+    if (!txDate) return false;
 
-    console.log("Filtered transactions:", filtered.length, "of", txns.length);
-    setFilteredTransactions(filtered);
-  }, []);
+    return (!startDateObj || txDate >= startDateObj) &&
+           (!endDateObj || txDate <= endDateObj);
+  });
+
+  console.log("Filtered transactions:", filtered.length, "of", txns.length);
+  setFilteredTransactions(filtered);
+}, []);
 
   useEffect(() => {
     if (!user?.uid) return;
