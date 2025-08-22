@@ -102,9 +102,9 @@ const Home = ({ user }) => {
     setDateRange(activeFilter);
   }, [activeFilter, selectedCategory]);
 
-  // Filter transactions based on date range - using useCallback to memoize
-  const filterTransactionsByDate = useCallback((txns, start, end) => {
-    if (!start && !end) {
+  // Filter transactions based on date range and category - using useCallback to memoize
+  const filterTransactionsByDate = useCallback((txns, start, end, categoryFilter) => {
+    if (!start && !end && !categoryFilter) {
       setFilteredTransactions(txns);
       return;
     }
@@ -116,6 +116,7 @@ const Home = ({ user }) => {
     if (endDateObj) endDateObj.setHours(23, 59, 59, 999);
 
     const filtered = txns.filter(tx => {
+      // Date filtering
       const rawDate = tx.transaction_date;
       const txDate = rawDate instanceof Date
         ? rawDate
@@ -123,11 +124,19 @@ const Home = ({ user }) => {
 
       if (!txDate) return false;
 
-      return (!startDateObj || txDate >= startDateObj) &&
-             (!endDateObj || txDate <= endDateObj);
+      const datePasses = (!startDateObj || txDate >= startDateObj) &&
+                         (!endDateObj || txDate <= endDateObj);
+
+      // Category filtering
+      const categoryPasses = !categoryFilter || 
+                            (tx.category_id === categoryFilter) || 
+                            (categoryFilter === 'income' && tx.type_id === 'income') ||
+                            (categoryFilter === 'expense' && tx.type_id === 'expense');
+
+      return datePasses && categoryPasses;
     });
 
-    console.log("Filtered transactions:", filtered.length, "of", txns.length);
+    console.log("Filtered transactions:", filtered.length, "of", txns.length, "with category:", categoryFilter);
     setFilteredTransactions(filtered);
   }, []);
 
@@ -162,7 +171,7 @@ const Home = ({ user }) => {
         setTransactions(data);
         
         // Apply filter to the new data
-        filterTransactionsByDate(data, startDate, endDate);
+        filterTransactionsByDate(data, startDate, endDate, selectedCategory);
       },
       (error) => {
         console.error("Error listening to transactions:", error);
@@ -172,10 +181,10 @@ const Home = ({ user }) => {
     return () => unsubscribe();
   }, [user, filterTransactionsByDate, startDate, endDate, selectedCategory]);
 
-  // Update filtered transactions when dates change
+  // Update filtered transactions when dates or category change
   useEffect(() => {
     filterTransactionsByDate(transactions, startDate, endDate, selectedCategory);
-  }, [transactions, startDate, endDate, filterTransactionsByDate, selectedCategory]);
+  }, [transactions, startDate, endDate, selectedCategory, filterTransactionsByDate]);
 
   const handleLogout = () => {
     const auth = getAuth();
@@ -439,22 +448,28 @@ const Home = ({ user }) => {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="filter-input"
                 >
-                  <option value="">All</option>
-                  <option value="Auto & Transport">Auto & Transport</option>
-                  <option value="Bills">Bills</option>
-                  <option value="Business">Business</option>
-                  <option value="Donations">Donations</option>
-                  <option value="Eating Out">Eating Out</option>
-                  <option value="Education">Education</option>
-                  <option value="Entertainment & Rec">Entertainment & Rec</option>
-                  <option value="Gifts">Gifts</option>
-                  <option value="Groceries">Groceries</option>
-                  <option value="Health">Health</option>
-                  <option value="Home">Home</option>
-                  <option value="Medical">Medical</option>
-                  <option value="Pets">Pets</option>
-                  <option value="Tech">Tech</option>
-                  <option value="Travel">Travel</option>
+                  <option value="">All Categories</option>
+                  <optgroup label="Transaction Types">
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                  </optgroup>
+                  <optgroup label="Expense Categories">
+                    <option value="Auto & Transport">Auto & Transport</option>
+                    <option value="Bills">Bills</option>
+                    <option value="Business">Business</option>
+                    <option value="Donations">Donations</option>
+                    <option value="Eating Out">Eating Out</option>
+                    <option value="Education">Education</option>
+                    <option value="Entertainment & Rec">Entertainment & Rec</option>
+                    <option value="Gifts">Gifts</option>
+                    <option value="Groceries">Groceries</option>
+                    <option value="Health">Health</option>
+                    <option value="Home">Home</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Pets">Pets</option>
+                    <option value="Tech">Tech</option>
+                    <option value="Travel">Travel</option>
+                  </optgroup>
                 </select>
               </div>
 
