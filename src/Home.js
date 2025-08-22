@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { Link, useLocation } from 'react-router-dom';
 import { db } from './firebase';
 import { addTransaction, deleteTransaction } from './services/transactionService';
 import './App.css';
-import { FaTachometerAlt, FaExchangeAlt, FaWallet, FaUser } from 'react-icons/fa';
+import { FaTachometerAlt, FaExchangeAlt, FaChartBar, FaUser } from 'react-icons/fa';
 
 const Home = ({ user }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -17,6 +18,7 @@ const Home = ({ user }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState('daily');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const location = useLocation();
 
   // Set default dates based on active filter
   const today = new Date();
@@ -256,10 +258,22 @@ const Home = ({ user }) => {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <h1>Personal Finance Tracker</h1>
           <ul className="nav-tabs">
-            <li><FaTachometerAlt /> Dashboard</li>
-            <li><FaExchangeAlt /> Transactions</li>
-            <li><FaWallet /> Budgets</li>
-          </ul>
+  <li className={location.pathname === '/' ? 'active' : ''}>
+    <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+      <FaTachometerAlt /> Dashboard
+    </Link>
+  </li>
+  <li className={location.pathname === '/transactions' ? 'active' : ''}>
+    <Link to="/transactions" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+      <FaExchangeAlt /> Transactions
+    </Link>
+  </li>
+  <li className={location.pathname === '/budgets' ? 'active' : ''}>
+    <Link to="/budgets" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+      <FaChartBar /> Visuals
+    </Link>
+  </li>
+</ul>
         </div>
         
         <div className="user-menu">

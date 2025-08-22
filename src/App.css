@@ -454,3 +454,107 @@ html, body {
 .transaction-item:last-child {
   border-bottom: none;
 }
+
+.nav-tabs li.active {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.nav-tabs li a {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+}
+
+.nav-tabs li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.transaction-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.transaction-category {
+  background-color: #e9ecef;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #495057;
+}
+
+.transaction-type {
+  background-color: #f8f9fa;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.transaction-type.income {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.transaction-type.expense {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Make the transaction items more spacious to accommodate the extra info */
+.transaction-item {
+  padding: 16px 0;
+  align-items: flex-start;
+}
+
+.transaction-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-box {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 40px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #0053a0;
+  box-shadow: 0 0 0 2px rgba(0, 83, 160, 0.2);
+}
+
+.search-box .clear-search {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.search-box .clear-search:hover {
+  color: #333;
+}
