@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth, signOut } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth'; // Add this import
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { db } from './firebase';
-import { FaTachometerAlt, FaExchangeAlt, FaChartBar, FaUser } from 'react-icons/fa';
+import Navigation from './components/Navigation';
 import { Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -31,7 +31,6 @@ const Visuals = ({ user }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [timeRange, setTimeRange] = useState('monthly');
-  const location = useLocation();
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -227,69 +226,30 @@ const Visuals = ({ user }) => {
   };
 
   const handleLogout = () => {
-    const auth = getAuth();
-    signOut(auth)
-      .then(() => {
-        window.location.reload();
-      })
-      .catch((error) => {
-        alert("Logout failed: " + error.message);
-      });
-  };
-
-  const username = user?.email?.split('@')[0];
+  const auth = getAuth();
+  signOut(auth)
+    .then(() => {
+      window.location.reload();
+    })
+    .catch((error) => {
+      alert("Logout failed: " + error.message);
+    });
+};
 
   return (
     <div className="dashboard-container">
-      {/* Navbar */}
-      <nav className="navbar">
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <h1>Personal Finance Tracker</h1>
-          <ul className="nav-tabs">
-            <li className={location.pathname === '/' ? 'active' : ''}>
-              <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                <FaTachometerAlt /> Dashboard
-              </Link>
-            </li>
-            <li className={location.pathname === '/transactions' ? 'active' : ''}>
-              <Link to="/transactions" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                <FaExchangeAlt /> Transactions
-              </Link>
-            </li>
-            <li className={location.pathname === '/budgets' ? 'active' : ''}>
-              <Link to="/budgets" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                <FaChartBar /> Visuals
-              </Link>
-            </li>
-          </ul>
-        </div>
+      <Navigation 
+        user={user} 
+        showDropdown={showDropdown} 
+        setShowDropdown={setShowDropdown} 
+        handleLogout={handleLogout} 
+      />
+
+      <div className="visuals-container">
+        <h2>Financial Visualizations</h2>
         
-        <div className="user-menu">
-          <div 
-            className="user-icon" 
-            onClick={() => setShowDropdown(!showDropdown)}
-            title="User Menu"
-          >
-            <FaUser size={20} />
-            {username && (
-              <span style={{ marginLeft: '8px', fontWeight: 'bold' }}>
-                {username}
-              </span>
-            )}
-          </div>
-
-          {showDropdown && (
-            <div className="dropdown-menu">
-              <div className="dropdown-item" onClick={handleLogout}>Logout</div>
-            </div>
-          )}
-        </div>
-      </nav>
-
-      <div className="visuals-header">
-        <h1>Financial Visualizations</h1>
-        <div className="time-filter">
-          <label>Time Range: </label>
+        <div className="time-range-selector">
+          <label>Time Range:</label>
           <select 
             value={timeRange} 
             onChange={(e) => setTimeRange(e.target.value)}
@@ -297,84 +257,54 @@ const Visuals = ({ user }) => {
           >
             <option value="weekly">Last 7 Days</option>
             <option value="monthly">Last 30 Days</option>
-            <option value="yearly">Last Year</option>
+            <option value="yearly">Last 12 Months</option>
           </select>
         </div>
-      </div>
 
-      {filteredTransactions.length === 0 ? (
-        <div className="no-data-message">
-          <h3>No transaction data available</h3>
-          <p>Add some transactions on the dashboard to see visualizations.</p>
-          <Link to="/" className="dashboard-link">
-            Go to Dashboard
-          </Link>
-        </div>
-      ) : (
-        <>
-          <div className="charts-container">
-            <div className="chart-card">
-              <h3>Income vs Expenses</h3>
-              <div className="chart-wrapper">
+        {filteredTransactions.length === 0 ? (
+          <div className="no-data-message">
+            <h3>No transaction data available</h3>
+            <p>Add some transactions to see visualizations of your finances</p>
+            <Link to="/" className="cta-button">
+              Add Transactions
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="chart-grid">
+              <div className="chart-container">
                 <Bar data={barChartData} options={chartOptions} />
               </div>
-            </div>
-
-            <div className="chart-card">
-              <h3>Expense Breakdown</h3>
-              <div className="chart-wrapper">
+              
+              <div className="chart-container">
                 <Pie data={pieChartData} options={pieChartOptions} />
               </div>
             </div>
-          </div>
 
-          <div className="stats-summary">
-            <div className="stat-item">
-              <h4>Total Transactions</h4>
-              <p>{filteredTransactions.length}</p>
+            <div className="stats-overview">
+              <div className="stat-card">
+                <h3>Total Income</h3>
+                <div className="stat-amount">
+                  ${Object.values(monthlyData).reduce((sum, data) => sum + data.income, 0).toFixed(2)}
+                </div>
+              </div>
+              <div className="stat-card">
+                <h3>Total Expenses</h3>
+                <div className="stat-amount">
+                  ${Object.values(monthlyData).reduce((sum, data) => sum + data.expenses, 0).toFixed(2)}
+                </div>
+              </div>
+              <div className="stat-card">
+                <h3>Net Balance</h3>
+                <div className="stat-amount">
+                  ${(Object.values(monthlyData).reduce((sum, data) => sum + data.income, 0) - 
+                     Object.values(monthlyData).reduce((sum, data) => sum + data.expenses, 0)).toFixed(2)}
+                </div>
+              </div>
             </div>
-            <div className="stat-item">
-              <h4>Total Income</h4>
-              <p style={{ color: '#2ecc71' }}>
-                ${filteredTransactions
-                  .filter(tx => tx.type_id === 'income')
-                  .reduce((sum, tx) => sum + tx.amount, 0)
-                  .toFixed(2)}
-              </p>
-            </div>
-            <div className="stat-item">
-              <h4>Total Expenses</h4>
-              <p style={{ color: '#e74c3c' }}>
-                ${filteredTransactions
-                  .filter(tx => tx.type_id === 'expense')
-                  .reduce((sum, tx) => sum + tx.amount, 0)
-                  .toFixed(2)}
-              </p>
-            </div>
-            <div className="stat-item">
-              <h4>Net Balance</h4>
-              <p style={{ 
-                color: filteredTransactions
-                  .filter(tx => tx.type_id === 'income')
-                  .reduce((sum, tx) => sum + tx.amount, 0) -
-                  filteredTransactions
-                  .filter(tx => tx.type_id === 'expense')
-                  .reduce((sum, tx) => sum + tx.amount, 0) >= 0 
-                  ? '#2ecc71' : '#e74c3c' 
-              }}>
-                ${(
-                  filteredTransactions
-                    .filter(tx => tx.type_id === 'income')
-                    .reduce((sum, tx) => sum + tx.amount, 0) -
-                  filteredTransactions
-                    .filter(tx => tx.type_id === 'expense')
-                    .reduce((sum, tx) => sum + tx.amount, 0)
-                ).toFixed(2)}
-              </p>
-            </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

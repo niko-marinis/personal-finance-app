@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-import { Link, useLocation } from 'react-router-dom';
 import { db } from './firebase';
 import { addTransaction, deleteTransaction } from './services/transactionService';
+import Navigation from './components/Navigation';
+import Filter from './components/Filter';
+import { getDateRange } from './utils/dateUtils';
 import './App.css';
-import { FaTachometerAlt, FaExchangeAlt, FaChartBar, FaUser } from 'react-icons/fa';
 
 const Home = ({ user }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -18,93 +19,20 @@ const Home = ({ user }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState('daily');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const location = useLocation();
-
+  
   // Set default dates based on active filter
-  const today = new Date();
-  const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  const [startDate, setStartDate] = useState(todayFormatted);
-
-  const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
-  const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-  const [endDate, setEndDate] = useState(tomorrowFormatted);
-
-  // Set date range based on filter type
-  const setDateRange = (filterType) => {
-    const today = new Date();
-
-    switch (filterType) {
-      case 'daily': {
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-
-        const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-
-        setStartDate(todayFormatted);
-        setEndDate(tomorrowFormatted);
-        break;
-      }
-
-      case 'weekly': {
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 7);
-
-        const startFormatted = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth() + 1).padStart(2, '0')}-${String(startOfWeek.getDate()).padStart(2, '0')}`;
-        const endFormatted = `${endOfWeek.getFullYear()}-${String(endOfWeek.getMonth() + 1).padStart(2, '0')}-${String(endOfWeek.getDate()).padStart(2, '0')}`;
-
-        setStartDate(startFormatted);
-        setEndDate(endFormatted);
-        break;
-      }
-
-      case 'monthly': {
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-        const startFormatted = `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}-${String(startOfMonth.getDate()).padStart(2, '0')}`;
-        const endFormatted = `${endOfMonth.getFullYear()}-${String(endOfMonth.getMonth() + 1).padStart(2, '0')}-${String(endOfMonth.getDate()).padStart(2, '0')}`;
-
-        setStartDate(startFormatted);
-        setEndDate(endFormatted);
-        break;
-      }
-
-      case 'yearly': {
-        const startOfYear = new Date(today.getFullYear(), 0, 1);
-        const endOfYear = new Date(today.getFullYear() + 1, 0, 1);
-
-        const startFormatted = `${startOfYear.getFullYear()}-${String(startOfYear.getMonth() + 1).padStart(2, '0')}-${String(startOfYear.getDate()).padStart(2, '0')}`;
-        const endFormatted = `${endOfYear.getFullYear()}-${String(endOfYear.getMonth() + 1).padStart(2, '0')}-${String(endOfYear.getDate()).padStart(2, '0')}`;
-
-        setStartDate(startFormatted);
-        setEndDate(endFormatted);
-        break;
-      }
-
-      default: {
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-
-        const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const tomorrowFormatted = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-
-        setStartDate(todayFormatted);
-        setEndDate(tomorrowFormatted);
-      }
-    }
-  };
+  const { startDate: defaultStartDate, endDate: defaultEndDate } = getDateRange('daily');
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
 
   // Apply filter when activeFilter changes
   useEffect(() => {
-    setDateRange(activeFilter);
-  }, [activeFilter, selectedCategory]);
+    const { startDate: newStartDate, endDate: newEndDate } = getDateRange(activeFilter);
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+  }, [activeFilter]);
 
-  // Filter transactions based on date range and category - using useCallback to memoize
+  // Filter transactions based on date range and category
   const filterTransactionsByDate = useCallback((txns, start, end, categoryFilter) => {
     if (!start && !end && !categoryFilter) {
       setFilteredTransactions(txns);
@@ -138,14 +66,11 @@ const Home = ({ user }) => {
       return datePasses && categoryPasses;
     });
 
-    console.log("Filtered transactions:", filtered.length, "of", txns.length, "with category:", categoryFilter);
     setFilteredTransactions(filtered);
   }, []);
 
   useEffect(() => {
     if (!user?.uid) return;
-    
-    console.log("Setting up Firebase listener for user:", user.uid);
     
     const q = query(
       collection(db, 'transactions'), 
@@ -155,10 +80,8 @@ const Home = ({ user }) => {
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
-        console.log("Received snapshot with", snapshot.docs.length, "documents");
         const data = snapshot.docs.map(doc => {
           const docData = doc.data();
-          console.log("Document data:", doc.id, docData);
           
           return { 
             id: doc.id, 
@@ -171,8 +94,6 @@ const Home = ({ user }) => {
           };
         });
         setTransactions(data);
-        
-        // Apply filter to the new data
         filterTransactionsByDate(data, startDate, endDate, selectedCategory);
       },
       (error) => {
@@ -205,13 +126,11 @@ const Home = ({ user }) => {
     
     setIsLoading(true);
     try {
-      console.log("Adding transaction:", { amount, type, category, description });
       await addTransaction(user.uid, amount, type, category, description);
       setAmount('');
       setCategory('');
       setDescription('');
       setType('expense');
-      alert('Transaction added successfully!');
     } catch (error) {
       console.error("Error adding transaction:", error);
       alert("Error adding transaction: " + error.message);
@@ -224,7 +143,6 @@ const Home = ({ user }) => {
     if (window.confirm("Are you sure you want to delete this transaction?")) {
       try {
         await deleteTransaction(id);
-        alert('Transaction deleted successfully!');
       } catch (error) {
         console.error("Error deleting transaction:", error);
         alert("Error deleting transaction: " + error.message);
@@ -234,11 +152,8 @@ const Home = ({ user }) => {
 
   const clearFilters = () => {
     setActiveFilter('daily');
-    setDateRange('daily');
     setSelectedCategory('');
   };
-
-  const username = user?.email?.split('@')[0];
 
   // Calculate totals for the stats cards based on filtered transactions
   const totalIncome = filteredTransactions
@@ -253,50 +168,12 @@ const Home = ({ user }) => {
 
   return (
     <div className="dashboard-container">
-      {/* Navbar */}
-      <nav className="navbar">
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <h1>Personal Finance Tracker</h1>
-          <ul className="nav-tabs">
-  <li className={location.pathname === '/' ? 'active' : ''}>
-    <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-      <FaTachometerAlt /> Dashboard
-    </Link>
-  </li>
-  <li className={location.pathname === '/transactions' ? 'active' : ''}>
-    <Link to="/transactions" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-      <FaExchangeAlt /> Transactions
-    </Link>
-  </li>
-  <li className={location.pathname === '/budgets' ? 'active' : ''}>
-    <Link to="/budgets" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-      <FaChartBar /> Visuals
-    </Link>
-  </li>
-</ul>
-        </div>
-        
-        <div className="user-menu">
-          <div 
-            className="user-icon" 
-            onClick={() => setShowDropdown(!showDropdown)}
-            title="User Menu"
-          >
-            <FaUser size={20} />
-            {username && (
-              <span style={{ marginLeft: '8px', fontWeight: 'bold' }}>
-                {username}
-              </span>
-            )}
-          </div>
-
-          {showDropdown && (
-            <div className="dropdown-menu">
-              <div className="dropdown-item" onClick={handleLogout}>Logout</div>
-            </div>
-          )}
-        </div>
-      </nav>
+      <Navigation 
+        user={user} 
+        showDropdown={showDropdown} 
+        setShowDropdown={setShowDropdown} 
+        handleLogout={handleLogout} 
+      />
 
       {/* Stat Cards Section */}
       <div className="stats-container">
@@ -398,114 +275,28 @@ const Home = ({ user }) => {
         <div className="transaction-list-container">
           <h3>Recent Transactions</h3>
           
-          {/* Quick Filter Buttons */}
-          <div className="quick-filter-buttons">
-            <button 
-              className={activeFilter === 'daily' ? 'filter-btn active' : 'filter-btn'}
-              onClick={() => setActiveFilter('daily')}
-            >
-              Daily
-            </button>
-            <button 
-              className={activeFilter === 'weekly' ? 'filter-btn active' : 'filter-btn'}
-              onClick={() => setActiveFilter('weekly')}
-            >
-              Weekly
-            </button>
-            <button 
-              className={activeFilter === 'monthly' ? 'filter-btn active' : 'filter-btn'}
-              onClick={() => setActiveFilter('monthly')}
-            >
-              Monthly
-            </button>
-            <button 
-              className={activeFilter === 'yearly' ? 'filter-btn active' : 'filter-btn'}
-              onClick={() => setActiveFilter('yearly')}
-            >
-              Yearly
-            </button>
-          </div>
-          
-          {/* Date Filter */}
-          <div className="date-filter">
-            <div className="filter-controls">
-              <div className="filter-group">
-                <label>Start Date</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    setActiveFilter('custom');
-                  }}
-                  className="filter-input"
-                />
-              </div>
+          <Filter
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            onClearFilters={clearFilters}
+          />
 
-              <div className="filter-group">
-                <label>End Date</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => {
-                    setEndDate(e.target.value);
-                    setActiveFilter('custom');
-                  }}
-                  className="filter-input"
-                />
-              </div>
-
-              <div className="filter-group">
-                <label>Category</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="filter-input"
-                >
-                  <option value="">All Categories</option>
-                  <optgroup label="Transaction Types">
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                  </optgroup>
-                  <optgroup label="Expense Categories">
-                    <option value="Auto & Transport">Auto & Transport</option>
-                    <option value="Bills">Bills</option>
-                    <option value="Business">Business</option>
-                    <option value="Donations">Donations</option>
-                    <option value="Eating Out">Eating Out</option>
-                    <option value="Education">Education</option>
-                    <option value="Entertainment & Rec">Entertainment & Rec</option>
-                    <option value="Gifts">Gifts</option>
-                    <option value="Groceries">Groceries</option>
-                    <option value="Health">Health</option>
-                    <option value="Home">Home</option>
-                    <option value="Medical">Medical</option>
-                    <option value="Pets">Pets</option>
-                    <option value="Tech">Tech</option>
-                    <option value="Travel">Travel</option>
-                  </optgroup>
-                </select>
-              </div>
-
-              <button 
-                className="clear-filter-btn"
-                onClick={clearFilters}
-              >
-                Reset Filters
-              </button>
-            </div>
-
-            {(startDate || endDate || selectedCategory) && (
-              <p className="filter-info">
-                Showing {filteredTransactions.length} transactions
-                {activeFilter !== 'custom' && ` (${activeFilter})`}
-                {selectedCategory && ` in category: ${selectedCategory}`}
-              </p>
-            )}
-          </div>
+          {(startDate || endDate || selectedCategory) && (
+            <p className="filter-info">
+              Showing {filteredTransactions.length} transactions
+              {activeFilter !== 'custom' && ` (${activeFilter})`}
+              {selectedCategory && ` in category: ${selectedCategory}`}
+            </p>
+          )}
           
           {filteredTransactions.length === 0 ? (
-            <p>No transactions found. {transactions.length > 0 ? 'Try adjusting your filters.' : 'Add your first transaction above!'}</p>
+            <p>No transactions found. {transactions.length > 0 ? 'Try adjusting your filters.' : 'Try adding a transaction!'}</p>
           ) : (
             <div className="transactions">
               {filteredTransactions.map(tx => (

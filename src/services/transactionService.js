@@ -1,4 +1,3 @@
-// src/services/transactionService.js
 import { db } from "../firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
 
@@ -7,8 +6,8 @@ export const addTransaction = async (userId, amount, typeId, categoryId, descrip
     user_id: userId,
     amount: parseFloat(amount),
     type_id: typeId,
-    category_id: categoryId,  // This should be the category
-    description: description,  // This should be the description
+    category_id: categoryId,
+    description: description, 
     transaction_date: Timestamp.now()
   });
 };

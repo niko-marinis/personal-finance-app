@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged, setPersistence, browserSessionPersistence, signOut } from 'firebase/auth';
 import { auth } from './firebase';
