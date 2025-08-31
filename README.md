@@ -1,10 +1,11 @@
 # 💰 Personal Finance Tracker
 
-A modern, responsive React.js application for managing your personal finances. Track income, expenses, and visualize your financial health with intuitive charts and analytics.
+The Personal Finance Tracker app is a modern, responsive React.js application for managing your personal finances. This app allows users to track income, expenses, and visualize their financial health with intuitive charts and analytics.
 
 ![React](https://img.shields.io/badge/React-19.1.0-blue)
 ![Firebase](https://img.shields.io/badge/Firebase-12.0.0-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://vercel.com)
+[![Vercel Status](https://img.shields.io/github/deployments/yourusername/your-repo-name/production?label=Vercel%20Deployment)](https://personal-finance-app-pearl.vercel.app/)
 
 ## ✨ Features
 
