@@ -5,7 +5,7 @@ The Personal Finance Tracker app is a modern, responsive React.js application fo
 ![React](https://img.shields.io/badge/React-19.1.0-blue)
 ![Firebase](https://img.shields.io/badge/Firebase-12.0.0-orange)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://vercel.com)
-[![Vercel Status](https://img.shields.io/github/deployments/yourusername/your-repo-name/production?label=Vercel%20Deployment)](https://personal-finance-app-pearl.vercel.app/)
+[![Vercel Status](https://img.shields.io/github/deployments/niko-marinis/personal-finance-app/production?label=Vercel%20Deployment)](https://personal-finance-app-pearl.vercel.app/)
 
 ## ✨ Features
 
